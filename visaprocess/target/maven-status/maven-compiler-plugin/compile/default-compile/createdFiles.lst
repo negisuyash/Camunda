@@ -1,0 +1,9 @@
+org\boa\visaprocess\delegate\MailDelegate.class
+org\boa\visaprocess\model\Flight.class
+org\boa\visaprocess\LoggerDelegate.class
+org\boa\visaprocess\delegate\RetreieveFlightsDelegate.class
+org\boa\visaprocess\CamundaApplication.class
+org\boa\visaprocess\delegate\PaymentDelegate.class
+org\boa\visaprocess\delegate\VisaApplicationDelegate.class
+org\boa\visaprocess\VisaProcessDelegate.class
+org\boa\visaprocess\delegate\SucessMailVisaDelegate.class

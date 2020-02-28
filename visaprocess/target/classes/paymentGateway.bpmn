@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_1oeeobe" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="3.6.0">
+  <bpmn:process id="payment" isExecutable="true">
+    <bpmn:serviceTask id="Task_166lr3w" name="Payment Gateway" camunda:type="external" camunda:topic="PaymentWorker">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:outputParameter name="paymentStatus" />
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_0ambjwb</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_078gxkl</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="EndEvent_1p3xyh8">
+      <bpmn:incoming>SequenceFlow_078gxkl</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_078gxkl" sourceRef="Task_166lr3w" targetRef="EndEvent_1p3xyh8" />
+    <bpmn:startEvent id="StartEvent_1kcvgyc">
+      <bpmn:outgoing>SequenceFlow_0ambjwb</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_0ambjwb" sourceRef="StartEvent_1kcvgyc" targetRef="Task_166lr3w" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="payment">
+      <bpmndi:BPMNShape id="ServiceTask_1i5lpxl_di" bpmnElement="Task_166lr3w">
+        <dc:Bounds x="270" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_1p3xyh8_di" bpmnElement="EndEvent_1p3xyh8">
+        <dc:Bounds x="492" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_078gxkl_di" bpmnElement="SequenceFlow_078gxkl">
+        <di:waypoint x="370" y="120" />
+        <di:waypoint x="492" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="StartEvent_1kcvgyc_di" bpmnElement="StartEvent_1kcvgyc">
+        <dc:Bounds x="172" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_0ambjwb_di" bpmnElement="SequenceFlow_0ambjwb">
+        <di:waypoint x="208" y="120" />
+        <di:waypoint x="270" y="120" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

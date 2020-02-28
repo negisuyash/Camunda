@@ -1,0 +1,3 @@
+org\boa\goldprocessexternal\App.class
+org\boa\goldprocessexternal\OffPeakRateWorker.class
+org\boa\goldprocessexternal\PeakRateWorker.class

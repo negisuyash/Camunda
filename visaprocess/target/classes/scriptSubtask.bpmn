@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_0wjz0ze" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="3.6.0">
+  <bpmn:process id="generateRandom" name="Generate Random Number" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>SequenceFlow_1s23dp6</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:endEvent id="EndEvent_0egl0pc">
+      <bpmn:incoming>SequenceFlow_09ewwcl</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:scriptTask id="randomNumberTask" name="Random Number Task" scriptFormat="groovy">
+      <bpmn:incoming>SequenceFlow_1s23dp6</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1d9ci02</bpmn:outgoing>
+      <bpmn:script>execution.getVariable("email");
+number=Math.abs(new Random().nextInt());
+println "It will generate random number for the given $email : $number";
+
+execution.setVariable("ApplicationNo",number);</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:sequenceFlow id="SequenceFlow_1s23dp6" sourceRef="StartEvent_1" targetRef="randomNumberTask" />
+    <bpmn:sequenceFlow id="SequenceFlow_1d9ci02" sourceRef="randomNumberTask" targetRef="applicationNoService" />
+    <bpmn:sequenceFlow id="SequenceFlow_1xuyihe" sourceRef="applicationNoService" targetRef="visaForm" />
+    <bpmn:serviceTask id="applicationNoService" name="Read Visa Process Application Number" camunda:delegateExpression="#{readApplicationNo}">
+      <bpmn:incoming>SequenceFlow_1d9ci02</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1xuyihe</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="SequenceFlow_0ayoji7" sourceRef="visaForm" targetRef="visaRule" />
+    <bpmn:userTask id="visaForm" name="Fill Application Form" camunda:assignee="Demo Demo">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="visaType" label="Visa Type" type="enum">
+            <camunda:value id="H1" name="H1(work)" />
+            <camunda:value id="B1" name="B1(Tourist)" />
+            <camunda:value id="B2" name="B2(Business)" />
+          </camunda:formField>
+          <camunda:formField id="duration" label="duration" type="long" defaultValue="0" />
+          <camunda:formField id="age" label="age" type="long" defaultValue="0" />
+          <camunda:formField id="skill" label="skill" type="long" defaultValue="1" />
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_1xuyihe</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0ayoji7</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="SequenceFlow_0uq2bfj" sourceRef="visaRule" targetRef="Task_15cj267" />
+    <bpmn:businessRuleTask id="visaRule" name="Apply Visa Rule" camunda:resultVariable="status" camunda:decisionRef="visaRule" camunda:mapDecisionResult="singleEntry">
+      <bpmn:incoming>SequenceFlow_0ayoji7</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0uq2bfj</bpmn:outgoing>
+    </bpmn:businessRuleTask>
+    <bpmn:exclusiveGateway id="ExclusiveGateway_0n1r0p0">
+      <bpmn:incoming>SequenceFlow_1vbcwdx</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_09ewwcl</bpmn:outgoing>
+      <bpmn:outgoing>SequenceFlow_1ioa6hl</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="SequenceFlow_09ewwcl" name="Visa Rejected" sourceRef="ExclusiveGateway_0n1r0p0" targetRef="EndEvent_0egl0pc">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{not status}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="SequenceFlow_1vbcwdx" sourceRef="Task_15cj267" targetRef="ExclusiveGateway_0n1r0p0" />
+    <bpmn:scriptTask id="Task_15cj267" name="Business Result" scriptFormat="groovy">
+      <bpmn:incoming>SequenceFlow_0uq2bfj</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1vbcwdx</bpmn:outgoing>
+      <bpmn:script>println "status result: "+execution.getVariable("status");
+
+execution.setVariable("result",execution.getVariable("status"));
+</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:sequenceFlow id="SequenceFlow_1ioa6hl" name="visa Accepted" sourceRef="ExclusiveGateway_0n1r0p0" targetRef="EndEvent_1m6ks69">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{status}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:endEvent id="EndEvent_1m6ks69">
+      <bpmn:incoming>SequenceFlow_1ioa6hl</bpmn:incoming>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_1tzu8s6" camunda:delegateExpression="#{SuccessMailVisaDelegate}" />
+    </bpmn:endEvent>
+    <bpmn:subProcess id="SubProcess_186q0h5" triggeredByEvent="true">
+      <bpmn:scriptTask id="ScriptTask_10j0zqq" name="test signal" scriptFormat="groovy">
+        <bpmn:incoming>SequenceFlow_1mmmxuc</bpmn:incoming>
+        <bpmn:outgoing>SequenceFlow_1oqibun</bpmn:outgoing>
+        <bpmn:script>println "condition subprocess triggered successfully";</bpmn:script>
+      </bpmn:scriptTask>
+      <bpmn:callActivity id="CallActivity_1g3sg9v" name="Flight Booking" calledElement="booking">
+        <bpmn:incoming>SequenceFlow_1oqibun</bpmn:incoming>
+        <bpmn:outgoing>SequenceFlow_1yhiuou</bpmn:outgoing>
+      </bpmn:callActivity>
+      <bpmn:sendTask id="SendTask_0g75k6d" name="Initiate Mail Task" camunda:delegateExpression="#{mailDelegate}">
+        <bpmn:incoming>SequenceFlow_1yhiuou</bpmn:incoming>
+        <bpmn:outgoing>SequenceFlow_0qzeyz5</bpmn:outgoing>
+      </bpmn:sendTask>
+      <bpmn:endEvent id="EndEvent_191xojx">
+        <bpmn:incoming>SequenceFlow_0qzeyz5</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="SequenceFlow_0qzeyz5" sourceRef="SendTask_0g75k6d" targetRef="EndEvent_191xojx" />
+      <bpmn:sequenceFlow id="SequenceFlow_1mmmxuc" sourceRef="StartEvent_1504zct" targetRef="ScriptTask_10j0zqq" />
+      <bpmn:sequenceFlow id="SequenceFlow_1yhiuou" sourceRef="CallActivity_1g3sg9v" targetRef="SendTask_0g75k6d" />
+      <bpmn:sequenceFlow id="SequenceFlow_1oqibun" sourceRef="ScriptTask_10j0zqq" targetRef="CallActivity_1g3sg9v" />
+      <bpmn:startEvent id="StartEvent_1504zct">
+        <bpmn:outgoing>SequenceFlow_1mmmxuc</bpmn:outgoing>
+        <bpmn:conditionalEventDefinition id="ConditionalEventDefinition_0civxc9">
+          <bpmn:condition xsi:type="bpmn:tFormalExpression">#{result}</bpmn:condition>
+        </bpmn:conditionalEventDefinition>
+      </bpmn:startEvent>
+    </bpmn:subProcess>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="generateRandom">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="192" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_0egl0pc_di" bpmnElement="EndEvent_0egl0pc">
+        <dc:Bounds x="1112" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ScriptTask_0urmp6g_di" bpmnElement="randomNumberTask">
+        <dc:Bounds x="270" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_1s23dp6_di" bpmnElement="SequenceFlow_1s23dp6">
+        <di:waypoint x="228" y="120" />
+        <di:waypoint x="270" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1d9ci02_di" bpmnElement="SequenceFlow_1d9ci02">
+        <di:waypoint x="370" y="120" />
+        <di:waypoint x="410" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1xuyihe_di" bpmnElement="SequenceFlow_1xuyihe">
+        <di:waypoint x="510" y="120" />
+        <di:waypoint x="550" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="ServiceTask_0izh2tl_di" bpmnElement="applicationNoService">
+        <dc:Bounds x="410" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_0ayoji7_di" bpmnElement="SequenceFlow_0ayoji7">
+        <di:waypoint x="650" y="120" />
+        <di:waypoint x="680" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="UserTask_1o85jbs_di" bpmnElement="visaForm">
+        <dc:Bounds x="550" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_0uq2bfj_di" bpmnElement="SequenceFlow_0uq2bfj">
+        <di:waypoint x="780" y="120" />
+        <di:waypoint x="810" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="BusinessRuleTask_19fftcp_di" bpmnElement="visaRule">
+        <dc:Bounds x="680" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ExclusiveGateway_0n1r0p0_di" bpmnElement="ExclusiveGateway_0n1r0p0" isMarkerVisible="true">
+        <dc:Bounds x="945" y="95" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_09ewwcl_di" bpmnElement="SequenceFlow_09ewwcl">
+        <di:waypoint x="995" y="120" />
+        <di:waypoint x="1112" y="120" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1020" y="93" width="67" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1vbcwdx_di" bpmnElement="SequenceFlow_1vbcwdx">
+        <di:waypoint x="910" y="120" />
+        <di:waypoint x="945" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="ScriptTask_03mfdi2_di" bpmnElement="Task_15cj267">
+        <dc:Bounds x="810" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_1ioa6hl_di" bpmnElement="SequenceFlow_1ioa6hl">
+        <di:waypoint x="970" y="145" />
+        <di:waypoint x="970" y="230" />
+        <di:waypoint x="1062" y="230" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="976" y="190" width="68" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="EndEvent_0ad54lx_di" bpmnElement="EndEvent_1m6ks69">
+        <dc:Bounds x="1062" y="212" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SubProcess_186q0h5_di" bpmnElement="SubProcess_186q0h5" isExpanded="true">
+        <dc:Bounds x="330" y="260" width="560" height="160" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ScriptTask_10j0zqq_di" bpmnElement="ScriptTask_10j0zqq">
+        <dc:Bounds x="420" y="300" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_1g3sg9v_di" bpmnElement="CallActivity_1g3sg9v">
+        <dc:Bounds x="550" y="300" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SendTask_0g75k6d_di" bpmnElement="SendTask_0g75k6d">
+        <dc:Bounds x="670" y="300" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_191xojx_di" bpmnElement="EndEvent_191xojx">
+        <dc:Bounds x="822" y="322" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_0qzeyz5_di" bpmnElement="SequenceFlow_0qzeyz5">
+        <di:waypoint x="770" y="340" />
+        <di:waypoint x="822" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1mmmxuc_di" bpmnElement="SequenceFlow_1mmmxuc">
+        <di:waypoint x="398" y="340" />
+        <di:waypoint x="420" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1yhiuou_di" bpmnElement="SequenceFlow_1yhiuou">
+        <di:waypoint x="650" y="340" />
+        <di:waypoint x="670" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1oqibun_di" bpmnElement="SequenceFlow_1oqibun">
+        <di:waypoint x="520" y="340" />
+        <di:waypoint x="550" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="StartEvent_01ydk8z_di" bpmnElement="StartEvent_1504zct">
+        <dc:Bounds x="362" y="322" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
